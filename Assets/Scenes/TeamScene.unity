@@ -1252,7 +1252,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1690855949}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d6468f944c9c54944ba73a366544f658, type: 3}
+  m_Script: {fileID: 11500000, guid: 9c650c04432face4f9dc23dc6f7d05c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStatus
   bowelLevel: 0
