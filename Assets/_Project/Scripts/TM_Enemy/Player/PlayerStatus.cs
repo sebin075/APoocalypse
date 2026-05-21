@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System; // [수정 관련 주석] 이벤트(Action)를 사용하기 위해 System 네임스페이스를 추가했습니다.
 
 public class PlayerStatus : MonoBehaviour
 {
@@ -11,6 +12,10 @@ public class PlayerStatus : MonoBehaviour
 
     [Header("게임 상태")]
     public bool isGameOver = false; // 게임 오버 상태 확인용
+
+    // [수정 관련 주석] 피격 시 스마트워치 UI 등에 신호를 보내기 위한 이벤트(Action) 변수를 추가했습니다.
+    // [상황 설명 주석] 이 이벤트를 통해 데미지 값(30, 15, 5)을 UI로 전달하여 어떤 적에게 맞았는지 구분하게 합니다.
+    public event Action<float> OnPlayerHit;
 
     void Awake()
     {
@@ -64,10 +69,17 @@ public class PlayerStatus : MonoBehaviour
     // [수정 관련 주석] 기존의 데미지 및 디버프 관련 코드를 하나로 합쳤습니다.
     // ========================================================
 
-    // [수정 관련 주석] 플레이어가 데미지를 받을 때 호출되는 함수입니다.
+    // [수정 관련 주석] 플레이어가 데미지를 받을 때 실제 변의(bowelLevel)가 증가하고 UI에 신호를 보내도록 수정했습니다.
     public void TakeDamage(float damage)
     {
         Debug.Log("Damage: " + damage);
+
+        // [상황 설명 주석] 데미지가 30이면 0.3(30%), 15면 0.15(15%)만큼 게이지를 즉시 증가시킵니다.
+        bowelLevel += (damage / 100f);
+        bowelLevel = Mathf.Clamp01(bowelLevel);
+
+        // [상황 설명 주석] UI 스크립트에게 방금 맞은 데미지 수치와 함께 피격 사실을 알립니다.
+        OnPlayerHit?.Invoke(damage);
     }
 
     // [수정 관련 주석] 쓰레기 등으로 인해 이동 속도가 느려지는 디버프 함수입니다.
