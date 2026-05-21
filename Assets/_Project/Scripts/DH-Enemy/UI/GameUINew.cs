@@ -29,6 +29,11 @@ public class GameUINew : MonoBehaviour
     [Header("VR 스마트워치 세팅")]
     public float showAngle = 45f;
 
+    // [수정 관련 주석] UI가 위로 45도 향하는 문제를 해결하기 위해, 인스펙터에서 아래로 꺾을 수 있도록 회전 보정값을 추가했습니다.
+    // [상황 설명 주석] 인스펙터에서 X값을 45나 -45 등으로 조절해 보시면, 조이스틱을 자연스럽게 쥔 상태에서도 UI가 정면을 향하게 맞출 수 있습니다.
+    [Tooltip("UI 각도를 아래로 내리려면 X값을 조절해보세요 (예: 45 또는 -45)")]
+    public Vector3 uiRotationOffset = new Vector3(45f, 0f, 0f);
+
     private Vector3 wristLocalPos;
     private Quaternion wristLocalRot;
     private Vector3 wristLocalScale;
@@ -76,22 +81,38 @@ public class GameUINew : MonoBehaviour
     // [상황 설명 주석] PC 테스트 시 'C' 키를 눌러 UI를 화면에 띄운 후, 위 방향키를 누르면 게이지가 차오르고 아래 방향키를 누르면 줄어듭니다. 이를 통해 상태 텍스트 변화를 VR 기기 없이 바로 확인할 수 있습니다.
     private void DebugGaugeInput()
     {
-        // PlayerStatus.Instance가 없거나 InputSystem이 비활성화 상태면 작동하지 않도록 예외 처리합니다.
-        if (Keyboard.current == null || PlayerStatus.Instance == null) return;
+        if (PlayerStatus.Instance == null) return;
 
-        // [상황 설명 주석] 초당 게이지가 증감하는 속도입니다. 너무 빠르거나 느리면 이 값을 조절하세요.
         float debugSpeed = 0.3f;
 
 #if UNITY_EDITOR || UNITY_STANDALONE
-        if (Keyboard.current.upArrowKey.isPressed)
+        if (Keyboard.current != null)
         {
-            PlayerStatus.Instance.bowelLevel += debugSpeed * Time.deltaTime;
-            PlayerStatus.Instance.bowelLevel = Mathf.Clamp(PlayerStatus.Instance.bowelLevel, 0f, 1f);
+            if (Keyboard.current.upArrowKey.isPressed)
+            {
+                PlayerStatus.Instance.bowelLevel += debugSpeed * Time.deltaTime;
+                PlayerStatus.Instance.bowelLevel = Mathf.Clamp(PlayerStatus.Instance.bowelLevel, 0f, 1f);
+            }
+            else if (Keyboard.current.downArrowKey.isPressed)
+            {
+                PlayerStatus.Instance.bowelLevel -= debugSpeed * Time.deltaTime;
+                PlayerStatus.Instance.bowelLevel = Mathf.Clamp(PlayerStatus.Instance.bowelLevel, 0f, 1f);
+            }
         }
-        else if (Keyboard.current.downArrowKey.isPressed)
+
+        // [수정 관련 주석] 조이스틱(게임패드)으로 테스트할 때도 십자키(D-Pad) 위/아래로 게이지를 조절할 수 있도록 추가했습니다.
+        if (Gamepad.current != null)
         {
-            PlayerStatus.Instance.bowelLevel -= debugSpeed * Time.deltaTime;
-            PlayerStatus.Instance.bowelLevel = Mathf.Clamp(PlayerStatus.Instance.bowelLevel, 0f, 1f);
+            if (Gamepad.current.dpad.up.isPressed)
+            {
+                PlayerStatus.Instance.bowelLevel += debugSpeed * Time.deltaTime;
+                PlayerStatus.Instance.bowelLevel = Mathf.Clamp(PlayerStatus.Instance.bowelLevel, 0f, 1f);
+            }
+            else if (Gamepad.current.dpad.down.isPressed)
+            {
+                PlayerStatus.Instance.bowelLevel -= debugSpeed * Time.deltaTime;
+                PlayerStatus.Instance.bowelLevel = Mathf.Clamp(PlayerStatus.Instance.bowelLevel, 0f, 1f);
+            }
         }
 #endif
     }
@@ -206,10 +227,11 @@ public class GameUINew : MonoBehaviour
 
         bool isCPressed = Keyboard.current != null && Keyboard.current.cKey.isPressed;
 
-        // [수정 관련 주석] 기존에도 isLookingAtWrist 변수를 통해 VR 손목 각도를 체크하는 로직이 있었으나, 작동을 더 확실하게 보장하기 위해 위치 복구 로직 밖으로 분리했습니다.
-        // [상황 설명 주석] 조이스틱(컨트롤러)의 위쪽(up) 방향과 카메라(유저의 시선) 사이의 각도를 계산하여 45도(showAngle) 이내인지 판별합니다.
-        float angleToFace = Vector3.Angle(leftController.up, mainCamera.position - leftController.position);
-        bool isLookingAtWrist = angleToFace < showAngle;
+        // [수정 관련 주석] 조이스틱(게임패드)으로 테스트할 때도 편하게 볼 수 있도록, 패드의 위쪽 버튼(Y 또는 세모)을 누르면 C키를 누른 것처럼 화면 앞에 UI가 뜨게 만들었습니다.
+        if (Gamepad.current != null && Gamepad.current.buttonNorth.isPressed)
+        {
+            isCPressed = true;
+        }
 
         if (isCPressed)
         {
@@ -226,10 +248,19 @@ public class GameUINew : MonoBehaviour
             // [수정 관련 주석] C키를 누르지 않았을 때는 무조건 원래 조이스틱(손목) 위치와 회전값으로 되돌리도록 변경했습니다.
             // [상황 설명 주석] 이렇게 해야 VR 게임 내에서 혹은 씬 뷰에서 조이스틱을 이리저리 움직여도 UI가 제자리에 잘 붙어있게 됩니다.
             transform.localPosition = wristLocalPos;
-            transform.localRotation = wristLocalRot;
+
+            // [수정 관련 주석] 위로 45도 들려 있는 UI를 아래로 꺾기 위해 인스펙터에서 설정한 보정값(uiRotationOffset)을 더해줍니다.
+            transform.localRotation = wristLocalRot * Quaternion.Euler(uiRotationOffset);
             transform.localScale = wristLocalScale;
 
-            // [상황 설명 주석] 조이스틱 각도가 카메라를 향한다면 (VR에서 유저가 시계를 보는 행동을 하면) UI를 켭니다.
+            // [수정 관련 주석] 기존에는 조이스틱의 'up' 방향을 기준으로 각도를 쟀으나, 이제 캔버스 자체의 앞면(-forward)이 카메라를 향하는지 계산합니다.
+            // [상황 설명 주석] 이렇게 변경하면 인스펙터에서 uiRotationOffset을 이리저리 꺾어도, UI가 카메라를 향하기만 하면 켜지므로 조이스틱으로 볼 때 훨씬 편해집니다.
+            Vector3 uiFaceDirection = -transform.forward;
+            Vector3 directionToCamera = mainCamera.position - transform.position;
+            float angleToFace = Vector3.Angle(uiFaceDirection, directionToCamera);
+
+            bool isLookingAtWrist = angleToFace < showAngle;
+
             if (isLookingAtWrist)
             {
                 myCanvas.enabled = true;
