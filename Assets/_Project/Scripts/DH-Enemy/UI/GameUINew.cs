@@ -166,6 +166,7 @@ public class GameUINew : MonoBehaviour
         }
         // ------------------------------------------------
 
+        // [수정 관련 주석] 기존에도 fillAmount 방식을 사용하고 있었으므로, 갈색 이미지가 핑크색 외각선 밖으로 삐져나가지 않도록 유니티 UI 내부 fillAmount 연산을 정상 반영합니다.
         // 게이지 바 fill 비율 업데이트
         if (bowelGaugeFill != null)
         {

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: abce3f128684624488cb62fe34209459
+guid: 3e3d21a7a0ecb0344b4c51ba0fa8f15f
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -106,30 +106,17 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "\uB625 \uAC8C\uC774\uC9C0 \uBC30\uACBD \uD234_0"
+      name: "\uBCC0 \uAC8C\uC774\uC9C0 \uC774\uBBF8\uC9C0_0"
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 652
-        height: 652
+        y: 267
+        width: 802
+        height: 267
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -138,8 +125,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ba7a2295e1764a44d8d7db75d5c5c006
-      internalID: 1801604333
+      spriteID: 7436d1fcdaf7eca49a4e7f4e37e405a7
+      internalID: 1815465048
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "\uBCC0 \uAC8C\uC774\uC9C0 \uC774\uBBF8\uC9C0_1"
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 802
+        height: 267
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 58f2b400185cf1640ae1d37de3898fe1
+      internalID: -903900194
       vertices: []
       indices: 
       edges: []
@@ -148,7 +157,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 634eabfda963ab5448308848c7ed83e3
+    spriteID: 063c9729ede2a5549849be108677535c
     internalID: 0
     vertices: []
     indices: 
@@ -158,9 +167,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":652.0,"y":652.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":2.0},"gridSpriteSize":{"x":802.0,"y":267.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      "\uB625 \uAC8C\uC774\uC9C0 \uBC30\uACBD \uD234_0": 1801604333
+      "\uBCC0 \uAC8C\uC774\uC9C0 \uC774\uBBF8\uC9C0_0": 1815465048
+      "\uBCC0 \uAC8C\uC774\uC9C0 \uC774\uBBF8\uC9C0_1": -903900194
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
