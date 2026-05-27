@@ -68,6 +68,9 @@ public class GameUINew : MonoBehaviour
 
     // 표시 여부를 제어할 Canvas 컴포넌트
     private Canvas myCanvas;
+    [Header("Debug")]
+    [Tooltip("Enable to log gauge values (useful to see true fillAmount vs visual).")]
+    public bool debugGauge = false;
 
     /// <summary>
     /// 초기화: 손목 기본 Transform 값을 저장하고, Canvas를 비활성화 상태로 시작합니다.
@@ -129,8 +132,8 @@ public class GameUINew : MonoBehaviour
         // 현재 장 수치 (0.0 ~ 1.0)
         float currentBowel = PlayerStatus.Instance.bowelLevel;
 
-        // --- 핵심 추가 로직: 100% 이상이면 하이라키에서 완전 비활성화 ---
-        if (currentBowel >= 1f)
+        // --- 핵심 추가 로직: 정확히 100%에 도달했을 때만 하이라키에서 완전 비활성화 ---
+        if (Mathf.Approximately(currentBowel, 1f))
         {
             // 한국어: 게이지가 가득 차면 UI를 보이지 않게 함.
             // uiRoot가 설정되어 있으면 하이라키에서 완전 비활성화하여
@@ -172,10 +175,18 @@ public class GameUINew : MonoBehaviour
             bowelGaugeFill.fillAmount = currentBowel;
         }
 
-        // 퍼센트 텍스트 업데이트 (소수점 버림)
+        // 퍼센트 텍스트 업데이트 (소수점 1자리 표시)
         if (bowelPercentText != null)
         {
-            bowelPercentText.text = $"{(int)(currentBowel * 100)}%";
+            bowelPercentText.text = $"{(currentBowel * 100f):F1}%";
+        }
+
+        // 디버그: 특정 임계치(예: 85% 이상)에서 실제 값과 이미지 fillAmount를 로그로 출력
+        if (debugGauge && currentBowel >= 0.85f)
+        {
+            string spriteName = bowelGaugeFill != null && bowelGaugeFill.sprite != null ? bowelGaugeFill.sprite.name : "(none)";
+            float fillAmt = bowelGaugeFill != null ? bowelGaugeFill.fillAmount : -1f;
+            Debug.Log($"[GaugeDebug] bowelLevel={currentBowel:F3}, fillAmount={fillAmt:F3}, sprite={spriteName}");
         }
     }
 
@@ -205,8 +216,8 @@ public class GameUINew : MonoBehaviour
         // myCanvas는 uiRoot를 사용하지 않는 경우에만 필수입니다.
         if (leftController == null || mainCamera == null || (!useUiRoot && myCanvas == null)) return;
 
-        // 장 게이지가 100%(1.0) 이상 다 찼는지 확인
-        bool isGaugeFull = PlayerStatus.Instance != null && PlayerStatus.Instance.bowelLevel >= 1f;
+        // 장 게이지가 정확히 100%(1.0)인지 확인 (시각적 반올림/정밀도 문제 방지)
+        bool isGaugeFull = PlayerStatus.Instance != null && Mathf.Approximately(PlayerStatus.Instance.bowelLevel, 1f);
 
         bool isCPressed = Keyboard.current != null && Keyboard.current.cKey.isPressed;
         if (Gamepad.current != null && Gamepad.current.buttonNorth.isPressed) isCPressed = true;

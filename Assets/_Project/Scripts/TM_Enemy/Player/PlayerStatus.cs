@@ -10,6 +10,9 @@ public class PlayerStatus : MonoBehaviour
     [Range(0f, 1f)]
     public float bowelLevel = 0.0f; // 변의 (0.0: 평온, 1.0: 바지에 쌈)
 
+    [Tooltip("초당 자동 상승 비율. 작을수록 게이지가 더 느리게 찹니다.")]
+    public float bowelIncreaseRate = 0.005f;
+
     [Header("게임 상태")]
     public bool isGameOver = false; // 게임 오버 상태 확인용
 
@@ -31,7 +34,7 @@ public class PlayerStatus : MonoBehaviour
         if (isGameOver) return;
 
         // (테스트용) 매 프레임마다 변의가 서서히 오릅니다.
-        bowelLevel += Time.deltaTime * 0.01f;
+        bowelLevel += Time.deltaTime * bowelIncreaseRate;
 
         // 게이지가 0(0%) ~ 1(100%) 사이를 벗어나지 않게 고정
         bowelLevel = Mathf.Clamp01(bowelLevel);

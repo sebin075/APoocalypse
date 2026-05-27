@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e56c8016349bb1c479f28fcb7064f6a6
+guid: 715e4d50294f2574cb6b62e583e4cca8
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -123,13 +123,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "\uCC28\uB294\uAC70_0"
+      name: "\uB2E4\uC6B4\uB85C\uB4DC (1)_0"
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 652
-        height: 652
+        x: 1
+        y: 235
+        width: 1578
+        height: 172
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -138,8 +138,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 94679da6e1f1c5e4da2641acce68fdb6
-      internalID: -1443113482
+      spriteID: dd4f491fe6ef86e419b70d67a792d690
+      internalID: 609213640
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 60ac6c8c1c1a81f42b5f4dc17f561f1e
+    spriteID: 8888c4274acece14f98efd438543e438
     internalID: 0
     vertices: []
     indices: 
@@ -158,9 +158,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":652.0,"y":652.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      "\uCC28\uB294\uAC70_0": -1443113482
+      "\uB2E4\uC6B4\uB85C\uB4DC (1)_0": 609213640
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
