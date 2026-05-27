@@ -172,12 +172,15 @@ public class GameUINew : MonoBehaviour
         // 게이지 바 fill 비율 업데이트
         if (bowelGaugeFill != null)
         {
-            bowelGaugeFill.fillAmount = currentBowel;
+            // [수정 관련 주석: 현재 이미지 리소스의 우측 여백 한계로 인해 fillAmount가 0.925f일 때 시각적으로 꽉 차 보입니다.
+            //  따라서 실제 0.0~1.0의 데이터를 이미지 종횡비 및 여백에 맞춰 최대 0.92489f 범위로 리매핑하여 대입합니다.]
+            bowelGaugeFill.fillAmount = currentBowel * 0.92489f;
         }
 
         // 퍼센트 텍스트 업데이트 (소수점 1자리 표시)
         if (bowelPercentText != null)
         {
+            // [수정 관련 주석: 화면에 보이는 텍스트는 실제 데이터 비율 그대로 0% ~ 100% 범위로 온전하게 출력해야 하므로 기존 연산식을 그대로 유지합니다.]
             bowelPercentText.text = $"{(currentBowel * 100f):F1}%";
         }
 
