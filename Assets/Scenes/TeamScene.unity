@@ -892,7 +892,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 609213640, guid: 715e4d50294f2574cb6b62e583e4cca8, type: 3}
+  m_Sprite: {fileID: -669550016, guid: 715e4d50294f2574cb6b62e583e4cca8, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1151,7 +1151,7 @@ MonoBehaviour:
   showAngle: 45
   uiRotationOffset: {x: 45, y: 0, z: 0}
   uiRoot: {fileID: 1232662531}
-  debugGauge: 0
+  debugGauge: 1
 --- !u!54 &1232662537
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1318,7 +1318,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 609213640, guid: 715e4d50294f2574cb6b62e583e4cca8, type: 3}
+  m_Sprite: {fileID: -669550016, guid: 715e4d50294f2574cb6b62e583e4cca8, type: 3}
   m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1

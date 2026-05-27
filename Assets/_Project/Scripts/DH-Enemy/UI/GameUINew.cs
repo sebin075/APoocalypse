@@ -223,6 +223,18 @@ public class GameUINew : MonoBehaviour
         // 장 게이지가 정확히 100%(1.0)인지 확인 (시각적 반올림/정밀도 문제 방지)
         bool isGaugeFull = PlayerStatus.Instance != null && Mathf.Approximately(PlayerStatus.Instance.bowelLevel, 1f);
 
+        // [수정 관련 주석: 팀원들이 공유 중인 PlayerStatus 코드를 전혀 건드리지 않고, 내 UI 스크립트 단독으로 게임 오버 예외 처리를 전담하도록 설계했습니다.]
+        // [수정 관련 주석: 장 게이지가 100%에 도달했거나 혹은 PlayerStatus 내부 변수인 isGameOver가 true가 되었다면, 기획 의도(아무것도 못하고 UI도 안 나오게 함)대로 작동하도록 UI 시스템을 완전히 셧다운하고 함수를 탈출합니다.]
+        if (isGaugeFull || (PlayerStatus.Instance != null && PlayerStatus.Instance.isGameOver))
+        {
+            if (useUiRoot)
+                uiRoot.SetActive(false);
+            else
+                if (myCanvas != null) myCanvas.enabled = false;
+
+            return; // UI를 강제로 비활성화한 뒤, 아래의 PC 배치나 VR 손목 감지 연산을 일절 타지 않고 즉시 종료합니다.
+        }
+
         bool isCPressed = Keyboard.current != null && Keyboard.current.cKey.isPressed;
         if (Gamepad.current != null && Gamepad.current.buttonNorth.isPressed) isCPressed = true;
 
