@@ -1984,7 +1984,7 @@
                     "name": "Activate",
                     "type": "Button",
                     "id": "41976d89-60de-4deb-bff9-16b4af96b290",
-                    "expectedControlType": "",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -2435,7 +2435,7 @@
                     "name": "Grab Move",
                     "type": "Button",
                     "id": "cfb29d37-3db0-4e5d-a73b-7d48a19e279e",
-                    "expectedControlType": "",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -2444,7 +2444,7 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "01c7fda4-9c15-4167-8b87-58024f21d903",
-                    "expectedControlType": "",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -2452,7 +2452,7 @@
                 {
                     "name": "FastMove",
                     "type": "Button",
-                    "id": "f68f4272-830b-49ca-9fae-fbd2d7f4dfc9",
+                    "id": "9004a900-c18c-45f2-b81d-c57889f5bf50",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -2539,7 +2539,7 @@
                 },
                 {
                     "name": "",
-                    "id": "4e249f5a-1f04-49c8-bc2e-d24721401321",
+                    "id": "3cff4ebd-0ea3-485f-ac6c-761ab5dc953e",
                     "path": "<XRController>{RightHand}/secondaryButton",
                     "interactions": "",
                     "processors": "",
