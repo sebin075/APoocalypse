@@ -72,19 +72,25 @@ public class PlayerStatus : MonoBehaviour
     // [수정 관련 주석] 플레이어가 데미지를 받을 때 실제 변의(bowelLevel)가 증가하고 UI에 신호를 보내도록 수정했습니다.
     public void TakeDamage(float damage)
     {
-        Debug.Log("Damage: " + damage);
+    // 이미 게임 오버면 무시
+    if (isGameOver)
+        return;
 
-        // [상황 설명 주석] 데미지가 30이면 0.3(30%), 15면 0.15(15%)만큼 게이지를 즉시 증가시킵니다.
-        bowelLevel += (damage / 100f);
-        bowelLevel = Mathf.Clamp01(bowelLevel);
+    Debug.Log("Damage: " + damage);
 
-        // [상황 설명 주석] UI 스크립트에게 방금 맞은 데미지 수치와 함께 피격 사실을 알립니다.
-        OnPlayerHit?.Invoke(damage);
-    }
+    // 변의 게이지 증가
+    bowelLevel += (damage / 100f);
 
-    // [수정 관련 주석] 쓰레기 등으로 인해 이동 속도가 느려지는 디버프 함수입니다.
-    public void ApplySlowDebuff(float slowAmount, float duration)
-    {
-        Debug.Log("Trash Debuff: " + slowAmount + " / " + duration);
+    // 0~1 범위 제한
+    bowelLevel = Mathf.Clamp01(bowelLevel);
+
+    // UI 이벤트 전달
+    OnPlayerHit?.Invoke(damage);
+
+    // 즉시 게임오버 체크
+    if (bowelLevel >= 1f)
+        {
+            TriggerGameOver();
+        }
     }
 }

@@ -127,6 +127,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 6900676903622151380, guid: 58d0a4ac86f2348deb02f3880c71378e, type: 3}
+      propertyPath: m_CameraTransform
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8135023674665499069, guid: 58d0a4ac86f2348deb02f3880c71378e, type: 3}
       propertyPath: m_Name
       value: XR Interaction Simulator
@@ -320,6 +324,11 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &328404952 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1767192433, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+  m_PrefabInstance: {fileID: 441087506}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &441087506
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -328,6 +337,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1178791450436251564, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_OriginBaseGameObject
+      value: 
+      objectReference: {fileID: 328404952}
     - target: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_Name
       value: XR Origin (XR Rig)
@@ -350,7 +363,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 1.8
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.z
@@ -382,6 +395,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1717954561962503726, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5033801203051696737, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -449,6 +466,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 441087507}
+    - target: {fileID: 3016726048711320864, guid: 476c91ecfefe4c347b56fd57b55cfc38, type: 3}
+      propertyPath: destroyOnHit
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5083605492770835802, guid: 476c91ecfefe4c347b56fd57b55cfc38, type: 3}
       propertyPath: m_CollisionDetection
       value: 3
@@ -761,6 +782,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c650c04432face4f9dc23dc6f7d05c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStatus
+  bowelLevel: 0
+  isGameOver: 0
 --- !u!1001 &1766251228
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -772,6 +795,10 @@ PrefabInstance:
     - target: {fileID: 1358379274285094543, guid: 6320e777c5f278c44a21b69a82df9cdc, type: 3}
       propertyPath: m_Name
       value: BigZombie
+      objectReference: {fileID: 0}
+    - target: {fileID: 2563643055957232208, guid: 6320e777c5f278c44a21b69a82df9cdc, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2699921616196854515, guid: 6320e777c5f278c44a21b69a82df9cdc, type: 3}
       propertyPath: m_LocalPosition.x
@@ -813,6 +840,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3001232289277227891, guid: 6320e777c5f278c44a21b69a82df9cdc, type: 3}
+      propertyPath: destroyOnHit
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3966050813118761066, guid: 6320e777c5f278c44a21b69a82df9cdc, type: 3}
       propertyPath: m_CollisionDetection
       value: 3
@@ -821,6 +852,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 441087507}
+    - target: {fileID: 5499031209167007431, guid: 6320e777c5f278c44a21b69a82df9cdc, type: 3}
+      propertyPath: moveMode
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5499031209167007431, guid: 6320e777c5f278c44a21b69a82df9cdc, type: 3}
       propertyPath: chaseDistance
       value: 20
@@ -882,6 +917,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5939689303982870575, guid: 7e823eb04aeff6b46a718b319d78c786, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6531079116838827215, guid: 7e823eb04aeff6b46a718b319d78c786, type: 3}
       propertyPath: m_Name
       value: NomalZombie
@@ -890,6 +929,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 441087507}
+    - target: {fileID: 7978841280299335539, guid: 7e823eb04aeff6b46a718b319d78c786, type: 3}
+      propertyPath: moveMode
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -927,27 +970,28 @@ MonoBehaviour:
   player: {fileID: 441087507}
   normalZombiePrefab: {fileID: 6531079116838827215, guid: 7e823eb04aeff6b46a718b319d78c786, type: 3}
   bigZombiePrefab: {fileID: 1358379274285094543, guid: 6320e777c5f278c44a21b69a82df9cdc, type: 3}
-  trashPrefab: {fileID: 8531424104025580696, guid: 476c91ecfefe4c347b56fd57b55cfc38, type: 3}
-  spawnDistance: 20
-  laneWidth: 2
+  obstaclePrefab: {fileID: 8531424104025580696, guid: 476c91ecfefe4c347b56fd57b55cfc38, type: 3}
+  minForwardDistance: 10
+  maxForwardDistance: 20
+  sideSpawnRange: 8
   baseSpawnHeight: 1
-  spawnDirection: {x: 0, y: 0, z: 1}
-  laneRightDirection: {x: 1, y: 0, z: 0}
-  spawnInterval: 3
-  maxSpawnCountPerWave: 1
+  spawnForwardDirection: {x: 0, y: 0, z: 1}
+  spawnRightDirection: {x: 1, y: 0, z: 0}
+  spawnInterval: 2
+  maxSpawnCountPerWave: 2
   normalZombieChance: 60
   bigZombieChance: 20
-  trashChance: 20
+  obstacleChance: 20
   normalZombieYOffset: 0
   bigZombieYOffset: 1
-  trashYOffset: 0
-  checkRadius: 1.5
+  obstacleYOffset: 0
+  checkRadius: 2
   hazardLayer:
     serializedVersion: 2
     m_Bits: 128
   currentSpawnTimer: 0
   lastCanSpawnResult: 0
-  lastSpawnLineIndex: -1
+  lastSpawnPosition: {x: 0, y: 0, z: 0}
   lastSpawnedObjectName: 
 --- !u!4 &1800711431
 Transform:
@@ -1041,6 +1085,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c650c04432face4f9dc23dc6f7d05c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStatus
+  bowelLevel: 0
+  isGameOver: 0
 --- !u!1 &2092139007
 GameObject:
   m_ObjectHideFlags: 0
@@ -1134,10 +1180,10 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 299639869}
-  - {fileID: 441087506}
   - {fileID: 756192408}
   - {fileID: 2092139010}
   - {fileID: 1249617921}
   - {fileID: 253434760}
   - {fileID: 1800711431}
   - {fileID: 881318246}
+  - {fileID: 441087506}

@@ -176,15 +176,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7773dd15f4fc461479add0a8caf926ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectMover
-  moveMode: 1
-  player: {fileID: 0}
-  moveSpeed: 2
+  moveMode: 0
+  moveSpeed: 0
   moveDirection: {x: 0, y: 0, z: -1}
   lookMoveDirection: 1
-  chaseDistance: 10
-  useDistanceSpeedUp: 1
-  maxSpeedBonus: 4
-  destroyBehindDistance: 5
-  hasDetectedPlayer: 0
+  useDistanceDestroy: 1
+  player: {fileID: 0}
+  destroyDistance: 35
+  currentMoveDirection: {x: 0, y: 0, z: 0}
   currentSpeed: 0
   currentDistanceToPlayer: 0

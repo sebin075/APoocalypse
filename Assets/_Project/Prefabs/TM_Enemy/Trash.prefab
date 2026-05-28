@@ -160,6 +160,8 @@ MonoBehaviour:
   debuffDuration: 5
   destroyOnHit: 1
   showDebugLog: 1
+  hasHit: 0
+  lastHitObjectName: 
 --- !u!114 &358026452309578928
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -173,11 +175,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjectMover
   moveMode: 0
-  player: {fileID: 0}
-  moveSpeed: 3
+  moveSpeed: 0
   moveDirection: {x: 0, y: 0, z: -1}
   lookMoveDirection: 1
-  chaseDistance: 10
-  useDistanceSpeedUp: 1
-  maxSpeedBonus: 3
-  destroyBehindDistance: 5
+  useDistanceDestroy: 1
+  player: {fileID: 0}
+  destroyDistance: 35
+  currentMoveDirection: {x: 0, y: 0, z: 0}
+  currentSpeed: 0
+  currentDistanceToPlayer: 0
