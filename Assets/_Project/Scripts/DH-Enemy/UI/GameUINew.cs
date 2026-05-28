@@ -4,16 +4,28 @@ using UnityEngine.InputSystem;
 using TMPro;
 using System.Collections;
 
+/*
+ * [상황 설명 주석]
+ * 플레이어가 휠체어를 끌고 있어 손을 자유롭게 쓰기 힘든 기획에 맞춰, 
+ * 고개를 숙여 하단의 태블릿을 보는 방식으로 UI 활성화 조건 및 컨셉을 변경했습니다.
+ * 기존의 불편했던 바닥 기준(Vector3.down) 각도 계산을 폐기하고,
+ * 정면(수평)을 기준으로 고개를 '아래로 몇 도 숙였는지' 직관적으로 계산하도록 수정했습니다.
+ * - PC 모드: C키를 누른 상태에서 일정 각도 이상 고개를 숙여야 태블릿(게이지)이 보입니다.
+ * - VR 모드: 기기를 착용한 채로 고개를 살짝(예: 25도 이상) 숙이면 자연스럽게 태블릿이 켜집니다.
+ */
+
 /// <summary>
-/// 플레이어의 장 게이지(bowelLevel)를 VR 손목 UI 또는 PC 테스트 화면에 표시하는 클래스입니다.
-/// VR에서는 왼쪽 컨트롤러에 부착된 Canvas를 손목 방향을 확인해 표시/숨김 처리합니다.
-/// PC에서는 C키 또는 게임패드 Y버튼으로 화면 앞에 UI를 띄울 수 있습니다.
+/// 플레이어의 장 게이지(bowelLevel)를 하단의 태블릿(VR) 또는 PC 테스트 화면에 표시하는 클래스입니다.
+/// VR에서는 휠체어를 끄는 상황을 고려하여, 머리(카메라)를 아래로 숙인 각도를 확인해 태블릿 UI를 표시/숨김 처리합니다.
+/// PC에서는 C키를 누른 상태로 시선을 내리면 화면 앞에 태블릿 UI를 띄울 수 있습니다.
 /// </summary>
 public class GameUINew : MonoBehaviour
 {
-    [Header("손목 UI - 게이지 연결")]
+    [Header("태블릿 UI - 게이지 연결")]
     // 장 게이지의 fillAmount를 제어할 Image 컴포넌트
     public Image bowelGaugeFill;
+    [Tooltip("게이지의 배경 이미지 또는 프레임 GameObject를 할당하세요. (예: GaugeBG)")]
+    public GameObject gaugeBackgroundObject;
     // 게이지 수치를 퍼센트(%)로 표시할 텍스트 컴포넌트
     public TextMeshProUGUI bowelPercentText;
 
@@ -28,9 +40,9 @@ public class GameUINew : MonoBehaviour
     // ──────────────────────────────────────────────────────────────
 
     [Header("위치 환경 세팅")]
-    // 왼쪽 컨트롤러 Transform (UI가 손목에 부착될 기준 오브젝트)
+    // 왼쪽 컨트롤러 Transform (현재는 UI가 부착될 위치 기준 오브젝트로 사용)
     public Transform leftController;
-    // 메인 카메라 Transform (시야 방향 및 PC 모드 UI 위치 계산에 사용)
+    // 메인 카메라 Transform (시야 방향 측정 및 PC 모드 태블릿 UI 위치 계산에 사용)
     public Transform mainCamera;
 
     [Header("PC 테스트 화면 설정")]
@@ -39,15 +51,13 @@ public class GameUINew : MonoBehaviour
     // PC 모드에서 UI의 월드 스케일 (너무 크지 않도록 작게 설정)
     public float pcViewScale = 0.002f;
 
-    [Header("VR 스마트워치 세팅")]
-    // 손목 UI를 표시할 최대 각도 (현재 코드에서 직접 사용되지 않으나 확장용으로 보존)
-    public float showAngle = 45f;
+    [Header("태블릿(시선) 활성화 설정")]
+    [Tooltip("수평(정면)을 기준으로 고개를 '아래로' 몇 도 이상 숙였을 때 태블릿 UI를 활성화할지 설정 (예: 25도). 65도 이하로 숙이면 보여지게 하는 것과 동일한 효과 (90 - 65 = 25).")]
+    public float lookDownThreshold = 25.0f;
+    
     [Tooltip("UI 각도를 아래로 내리려면 X값을 조절해보세요 (예: 45 또는 -45)")]
-    // 손목에 부착된 UI의 회전 보정값 (기본값: X축 45도 기울임)
+    // 태블릿 UI의 회전 보정값 (기본값: X축 45도 기울임)
     public Vector3 uiRotationOffset = new Vector3(45f, 0f, 0f);
-
-    // 메인 카메라 콜라이더가 이 오브젝트의 Trigger 범위 안에 있는지 여부
-    private bool isInsideTrigger = false;
 
     [Header("Hierarchy Toggle (Optional)")]
     [Tooltip("UI 전체를 하이라키에서 완전 비활성화하려면, UI를 담은 GameObject를 할당하세요. 이 스크립트가 붙은 게임오브젝트와는 다른 객체여야 합니다.")]
@@ -61,31 +71,31 @@ public class GameUINew : MonoBehaviour
     // uiRoot를 사용할지 여부(할당되어 있고 이 스크립트가 붙은 오브젝트와 다를 때만 true)
     private bool useUiRoot = false;
 
-    // Start() 시점에 저장해두는 손목 UI의 기본 로컬 위치/회전/스케일
+    // Start() 시점에 저장해두는 태블릿(기존 손목) UI의 기본 로컬 위치/회전/스케일
     private Vector3 wristLocalPos;
     private Quaternion wristLocalRot;
     private Vector3 wristLocalScale;
 
     // 표시 여부를 제어할 Canvas 컴포넌트
     private Canvas myCanvas;
+    
     [Header("Debug")]
     [Tooltip("Enable to log gauge values (useful to see true fillAmount vs visual).")]
     public bool debugGauge = false;
+    [Tooltip("PC 모드에서 현재 고개 숙인 각도를 표시할 TextMeshProUGUI 컴포넌트.")]
+    public TextMeshProUGUI angleDebugText;
 
     /// <summary>
-    /// 초기화: 손목 기본 Transform 값을 저장하고, Canvas를 비활성화 상태로 시작합니다.
+    /// 초기화: 태블릿 기본 Transform 값을 저장하고, Canvas를 비활성화 상태로 시작합니다.
     /// </summary>
     void Start()
     {
-        // 씬 로드 시점의 로컬 Transform을 손목 기준으로 저장
+        // 씬 로드 시점의 로컬 Transform을 저장 (기존 wrist 변수명 유지)
         wristLocalPos = transform.localPosition;
         wristLocalRot = transform.localRotation;
         wristLocalScale = transform.localScale;
 
         // 한국어: 초기화 처리
-        // - uiRoot가 지정되어 있고 이 스크립트와 다른 오브젝트일 경우에는
-        //   처음부터 하이라키에서 완전 비활성화하기 위해 uiRoot.SetActive(false) 처리.
-        // - 그렇지 않은 경우(기존 방식)에는 Canvas.enabled = false 로 렌더링만 끔.
         myCanvas = GetComponent<Canvas>();
         useUiRoot = uiRoot != null && uiRoot != this.gameObject && !transform.IsChildOf(uiRoot.transform);
         if (useUiRoot)
@@ -99,31 +109,16 @@ public class GameUINew : MonoBehaviour
     }
 
     /// <summary>
-    /// 메인 카메라 관련 콜라이더인지 여부를 판단합니다.
-    /// </summary>
-    private bool IsCameraCollider(Collider other)
-    {
-        if (mainCamera == null) return false;
-        return other.transform == mainCamera
-            || other.transform.IsChildOf(mainCamera)
-            || mainCamera.IsChildOf(other.transform);
-    }
-
-    /// <summary>
-    /// 매 프레임 게이지 업데이트와 UI 표시 여부를 갱신합니다.
+    /// 매 프레임 게이지 업데이트와 태블릿 UI 표시 여부를 갱신합니다.
     /// </summary>
     void Update()
     {
-        // PlayerStatus의 bowelLevel을 읽어 UI를 갱신 및 100% 시 숨김 처리
         UpdateBowelGauge();
-
-        // 손목 각도 또는 PC 입력에 따라 Canvas 표시/숨김 처리
         CheckVisibility();
     }
 
     /// <summary>
     /// PlayerStatus.bowelLevel 값을 읽어 게이지 UI(fillAmount, 퍼센트 텍스트)를 업데이트합니다.
-    /// 100%에 도달하면 UI 게임오브젝트를 아예 꺼버립니다.
     /// </summary>
     private void UpdateBowelGauge()
     {
@@ -132,61 +127,14 @@ public class GameUINew : MonoBehaviour
         // 현재 장 수치 (0.0 ~ 1.0)
         float currentBowel = PlayerStatus.Instance.bowelLevel;
 
-        // --- 핵심 추가 로직: 정확히 100%에 도달했을 때만 하이라키에서 완전 비활성화 ---
-        if (Mathf.Approximately(currentBowel, 1f))
-        {
-            // 한국어: 게이지가 가득 차면 UI를 보이지 않게 함.
-            // uiRoot가 설정되어 있으면 하이라키에서 완전 비활성화하여
-            // Hierarchy 창에 남아있지 않도록 처리합니다(작업 중 눈에 거슬리지 않음).
-            // uiRoot가 없으면 기존처럼 개별 컴포넌트/Canvas만 비활성화합니다.
-            if (useUiRoot)
-            {
-                uiRoot.SetActive(false);
-            }
-            else
-            {
-                if (bowelGaugeFill != null) bowelGaugeFill.gameObject.SetActive(false);
-                if (bowelPercentText != null) bowelPercentText.gameObject.SetActive(false);
-                if (myCanvas != null) myCanvas.enabled = false;
-            }
-
-            // 더 이상 업데이트할 필요가 없으므로 아래 로직 생략
-            return;
-        }
-        else
-        {
-            // 한국어: 100% 미만일 때
-            // - uiRoot를 사용중이라면 하이라키 활성화/비활성 관리는 CheckVisibility에서 처리합니다.
-            // - uiRoot를 사용하지 않는 경우에는 게이지 이미지와 텍스트 게임오브젝트를 다시 활성화합니다.
-            if (!useUiRoot)
-            {
-                if (bowelGaugeFill != null && !bowelGaugeFill.gameObject.activeSelf)
-                    bowelGaugeFill.gameObject.SetActive(true);
-
-                if (bowelPercentText != null && !bowelPercentText.gameObject.activeSelf)
-                    bowelPercentText.gameObject.SetActive(true);
-            }
-        }
-        // ------------------------------------------------
-
-        // [수정 관련 주석] 기존에도 fillAmount 방식을 사용하고 있었으므로, 갈색 이미지가 핑크색 외각선 밖으로 삐져나가지 않도록 유니티 UI 내부 fillAmount 연산을 정상 반영합니다.
-        // 게이지 바 fill 비율 업데이트
-        if (bowelGaugeFill != null)
-        {
-            // [수정 관련 주석: 현재 이미지 리소스의 우측 여백 한계로 인해 fillAmount가 0.925f일 때 시각적으로 꽉 차 보입니다.
-            //  따라서 실제 0.0~1.0의 데이터를 이미지 종횡비 및 여백에 맞춰 최대 0.92489f 범위로 리매핑하여 대입합니다.]
-            bowelGaugeFill.fillAmount = currentBowel * 0.92489f;
-        }
+        // 게이지 바 fill 비율 업데이트 (이미지 여백 보정 없이 0.0 ~ 1.0 그대로 적용)
+        if (bowelGaugeFill != null) bowelGaugeFill.fillAmount = currentBowel;
 
         // 퍼센트 텍스트 업데이트 (소수점 1자리 표시)
-        if (bowelPercentText != null)
-        {
-            // [수정 관련 주석: 화면에 보이는 텍스트는 실제 데이터 비율 그대로 0% ~ 100% 범위로 온전하게 출력해야 하므로 기존 연산식을 그대로 유지합니다.]
-            bowelPercentText.text = $"{(currentBowel * 100f):F1}%";
-        }
+        if (bowelPercentText != null) bowelPercentText.text = $"{(currentBowel * 100f):F1}%";
 
         // 디버그: 특정 임계치(예: 85% 이상)에서 실제 값과 이미지 fillAmount를 로그로 출력
-        if (debugGauge && currentBowel >= 0.85f)
+        if (debugGauge && currentBowel >= 0.85f && bowelGaugeFill != null)
         {
             string spriteName = bowelGaugeFill != null && bowelGaugeFill.sprite != null ? bowelGaugeFill.sprite.name : "(none)";
             float fillAmt = bowelGaugeFill != null ? bowelGaugeFill.fillAmount : -1f;
@@ -195,81 +143,100 @@ public class GameUINew : MonoBehaviour
     }
 
     /// <summary>
-    /// 메인 카메라 콜라이더가 이 Trigger 영역에 진입하면 isInsideTrigger를 true로 설정합니다.
-    /// </summary>
-    private void OnTriggerEnter(Collider other)
-    {
-        if (IsCameraCollider(other)) isInsideTrigger = true;
-    }
-
-    /// <summary>
-    /// 메인 카메라 콜라이더가 이 Trigger 영역을 벗어나면 isInsideTrigger를 false로 설정합니다.
-    /// </summary>
-    private void OnTriggerExit(Collider other)
-    {
-        if (IsCameraCollider(other)) isInsideTrigger = false;
-    }
-
-    /// <summary>
-    /// PC 모드(C키 / 게임패드 Y버튼)와 VR 손목 모드를 구분하여 Canvas 표시 여부와 UI Transform을 결정합니다.
+    /// PC 모드(C키)와 VR 시선 모드를 구분하여 태블릿 Canvas 표시 여부와 UI Transform을 결정합니다.
     /// </summary>
     private void CheckVisibility()
     {
-        // 한국어: 필수 참조 체크
-        // leftController, mainCamera는 반드시 필요하며,
-        // myCanvas는 uiRoot를 사용하지 않는 경우에만 필수입니다.
         if (leftController == null || mainCamera == null || (!useUiRoot && myCanvas == null)) return;
 
-        // 장 게이지가 정확히 100%(1.0)인지 확인 (시각적 반올림/정밀도 문제 방지)
         bool isGaugeFull = PlayerStatus.Instance != null && Mathf.Approximately(PlayerStatus.Instance.bowelLevel, 1f);
 
-        // [수정 관련 주석: 팀원들이 공유 중인 PlayerStatus 코드를 전혀 건드리지 않고, 내 UI 스크립트 단독으로 게임 오버 예외 처리를 전담하도록 설계했습니다.]
-        // [수정 관련 주석: 장 게이지가 100%에 도달했거나 혹은 PlayerStatus 내부 변수인 isGameOver가 true가 되었다면, 기획 의도(아무것도 못하고 UI도 안 나오게 함)대로 작동하도록 UI 시스템을 완전히 셧다운하고 함수를 탈출합니다.]
         if (isGaugeFull || (PlayerStatus.Instance != null && PlayerStatus.Instance.isGameOver))
-        {
+        { // UI를 강제로 비활성화한 뒤, 아래의 PC 배치나 VR 손목 감지 연산을 일절 타지 않고 즉시 종료합니다.
             if (useUiRoot)
                 uiRoot.SetActive(false);
             else
                 if (myCanvas != null) myCanvas.enabled = false;
 
-            return; // UI를 강제로 비활성화한 뒤, 아래의 PC 배치나 VR 손목 감지 연산을 일절 타지 않고 즉시 종료합니다.
+            return; 
+        }
+        
+        // ------------------------------------------------
+        // [수정 관련 주석] 직관적인 고개 숙임(Tilt Down) 각도 계산 로직으로 교체
+        // 카메라의 수평 방향 벡터(y=0)를 구하여 기준점(0도)으로 삼습니다.
+        Vector3 flatCamForward = new Vector3(mainCamera.forward.x, 0f, mainCamera.forward.z).normalized;
+        float currentTiltDownAngle = 0f;
+
+        // 시선이 수평 기준선보다 '아래(y < 0)'를 향할 때만 각도를 계산합니다. (위로 쳐다보는 경우는 무시)
+        if (mainCamera.forward.y < 0)
+        {
+            // 수평선(flatCamForward)과 현재 시선(mainCamera.forward) 사이의 각도를 구합니다.
+            currentTiltDownAngle = Vector3.Angle(flatCamForward, mainCamera.forward);
         }
 
-        bool isCPressed = Keyboard.current != null && Keyboard.current.cKey.isPressed;
-        if (Gamepad.current != null && Gamepad.current.buttonNorth.isPressed) isCPressed = true;
+        // 숙인 각도가 설정한 기준치(예: 25도) 이상이면 true
+        bool isTilted = currentTiltDownAngle >= lookDownThreshold;
+        // ------------------------------------------------
 
-        if (isCPressed)
+        // 2. 입력 체크
+        bool isCPressed = (Keyboard.current != null && Keyboard.current.cKey.isPressed) || 
+                          (Gamepad.current != null && Gamepad.current.buttonNorth.isPressed);
+
+        bool canvasOn = false;
+        bool gaugeVisible = false;
+        bool debugTextVisible = false;
+
+        if (isCPressed) // PC 모드
         {
-            // ── PC 모드 처리
-            // 한국어: PC에서는 C키(또는 게임패드 Y)를 누를 때 카메라 앞에 UI를 띄웁니다.
-            // 게이지가 가득 찼다면 uiRoot 또는 Canvas를 비활성화합니다.
-            if (useUiRoot)
-                uiRoot.SetActive(!isGaugeFull);
-            else
-                myCanvas.enabled = !isGaugeFull;
+            canvasOn = true;           
+            debugTextVisible = true;   
+            gaugeVisible = isTilted;   // 각도 기준(예: 바닥 기준 65도)을 만족해야 게이지 요소 활성화
 
-            transform.position = mainCamera.position
-                               + (mainCamera.right * pcViewOffset.x)
-                               + (mainCamera.up * pcViewOffset.y)
-                               + (mainCamera.forward * pcViewOffset.z);
-
-            transform.rotation = Quaternion.LookRotation(transform.position - mainCamera.position);
-            transform.localScale = Vector3.one * pcViewScale;
+            // 현재 고개 숙인 각도를 표시
+            if (angleDebugText != null) angleDebugText.text = $"Tilt Down: {currentTiltDownAngle:F1}°";
         }
-        else
+        else // VR 모드 (C키를 누르지 않았을 때)
         {
-            // ── VR 손목 모드 처리
-            // 한국어: VR에서는 손목에 붙은 원래 로컬 Transform을 복원하고,
-            // 플레이어의 카메라가 손목 트리거 안에 있을 때만 UI를 보여줍니다.
-            transform.localPosition = wristLocalPos;
-            transform.localRotation = wristLocalRot * Quaternion.Euler(uiRotationOffset);
-            transform.localScale = wristLocalScale;
+            canvasOn = isTilted;       
+            gaugeVisible = isTilted;
+            debugTextVisible = false;  
+        }
 
-            // 시선(카메라)이 손목 트리거 내부에 있고 게이지가 가득 차지 않았을 때만 활성화
-            if (useUiRoot)
-                uiRoot.SetActive(isInsideTrigger && !isGaugeFull);
+        // 3. UI 활성화 적용
+        if (useUiRoot) uiRoot.SetActive(canvasOn);
+        else if (myCanvas != null) myCanvas.enabled = canvasOn;
+
+        // 4. 내부 요소 가시성 조절
+        if (canvasOn)
+        {   
+            // 게이지 배경 오브젝트가 명시적으로 할당되어 있다면 그것을 제어합니다.
+            if (gaugeBackgroundObject != null)
+                gaugeBackgroundObject.SetActive(gaugeVisible);
+            // 그렇지 않다면, bowelGaugeFill의 부모 오브젝트를 게이지 배경으로 가정하고 제어합니다.
+            // (이전 코드의 동작 방식)
+            else if (bowelGaugeFill != null && bowelGaugeFill.transform.parent != null)
+                bowelGaugeFill.transform.parent.gameObject.SetActive(gaugeVisible);
+            
+            if (bowelPercentText != null) bowelPercentText.gameObject.SetActive(gaugeVisible);
+            if (angleDebugText != null) angleDebugText.gameObject.SetActive(debugTextVisible);
+
+            // 5. 위치 업데이트
+            if (isCPressed)
+            {
+                transform.position = mainCamera.position
+                                   + (mainCamera.right * pcViewOffset.x)
+                                   + (mainCamera.up * pcViewOffset.y)
+                                   + (mainCamera.forward * pcViewOffset.z);
+
+                transform.rotation = Quaternion.LookRotation(transform.position - mainCamera.position);
+                transform.localScale = Vector3.one * pcViewScale;
+            }
             else
-                myCanvas.enabled = isInsideTrigger && !isGaugeFull;
+            {
+                transform.localPosition = wristLocalPos;
+                transform.localRotation = wristLocalRot * Quaternion.Euler(uiRotationOffset);
+                transform.localScale = wristLocalScale;
+            }
         }
     }
 }
