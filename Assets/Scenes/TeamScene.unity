@@ -93,7 +93,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 97f064faa4bde3c41804841bfeac86ee, type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -686,9 +686,6 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 1680501587, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
-      insertIndex: 1
-      addedObject: {fileID: 812554044}
     - targetCorrespondingSourceObject: {fileID: 202364688, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1232662532}
@@ -913,11 +910,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 760163720}
   m_CullTransparentMesh: 1
---- !u!4 &812554044 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-  m_PrefabInstance: {fileID: 1630987595}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1200259690
 GameObject:
   m_ObjectHideFlags: 0
@@ -1151,6 +1143,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameUI
   bowelGaugeFill: {fileID: 1498717573}
+  gaugeBackgroundObject: {fileID: 0}
   bowelPercentText: {fileID: 2053733565}
   leftController: {fileID: 441087507}
   mainCamera: {fileID: 1967633410}
@@ -1406,63 +1399,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6320e777c5f278c44a21b69a82df9cdc, type: 3}
---- !u!1001 &1630987595
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 2037392910}
-    m_Modifications:
-    - target: {fileID: -6689036041284674117, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_Name
-      value: wheelchair
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.02397108
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0.29517996
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.1599998
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2774220344278030320, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: -5645937942226959685, guid: 73276571aa2e4644e868b5dc2ca7ba74, type: 3}
 --- !u!1 &1690855949 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
@@ -1828,11 +1764,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4, y: 0.4, z: 0.3}
   m_Center: {x: 0, y: -0.02, z: 0.3}
---- !u!4 &2037392910 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1680501587, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
-  m_PrefabInstance: {fileID: 441087506}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2053733563
 GameObject:
   m_ObjectHideFlags: 0
@@ -1894,8 +1825,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: fc0f8d63c84bd5d418fa4cb7c4d53959, type: 2}
-  m_sharedMaterial: {fileID: -3886167835637919661, guid: fc0f8d63c84bd5d418fa4cb7c4d53959, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
