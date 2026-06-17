@@ -2,139 +2,148 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
-    // ================================
-    // 스폰 위치 설정
-    // ================================
-    [Header("Spawn Points")]
-
+    [Header("Player Target")]
     [Tooltip(
-        "오브젝트 생성 위치\n" +
-        "Left / Center / Right 순서 추천"
+        "스폰 기준이 되는 플레이어 Transform\n" +
+        "휠체어 게임에서는 WheelchairRoot 또는 PlayerRoot 추천\n" +
+        "비워두면 Player 태그 오브젝트를 자동으로 찾음"
     )]
     [SerializeField]
-    private Transform[] spawnPoints;
+    private Transform player;
 
-    // ================================
-    // 생성할 프리팹 설정
-    // ================================
     [Header("Prefabs")]
-
     [Tooltip("일반 좀비 프리팹")]
     [SerializeField]
     private GameObject normalZombiePrefab;
 
-    [Tooltip("대형 좀비 프리팹")]
+    [Tooltip("거대 좀비 프리팹")]
     [SerializeField]
     private GameObject bigZombiePrefab;
 
-    [Tooltip("쓰레기 프리팹")]
+    [Tooltip("장애물 프리팹")]
     [SerializeField]
-    private GameObject trashPrefab;
+    private GameObject obstaclePrefab;
 
-    // ================================
-    // 생성 주기 설정
-    // ================================
-    [Header("Spawn Settings")]
+    [Header("Spawn Area")]
+    [Tooltip(
+        "플레이어 앞쪽 최소 생성 거리\n" +
+        "추천: 12~15\n" +
+        "너무 작으면 눈앞에 갑자기 생성됨"
+    )]
+    [Range(1f, 50f)]
+    [SerializeField]
+    private float minForwardDistance = 15f;
 
     [Tooltip(
-        "몇 초마다 생성할지\n" +
-        "현재 추천값 : 2"
+        "플레이어 앞쪽 최대 생성 거리\n" +
+        "추천: 25~35\n" +
+        "너무 크면 너무 멀리 생성됨"
+    )]
+    [Range(1f, 80f)]
+    [SerializeField]
+    private float maxForwardDistance = 30f;
+
+    [Tooltip(
+        "좌우 랜덤 생성 범위\n" +
+        "추천: 6~10\n" +
+        "값이 클수록 더 넓은 범위에 생성됨"
+    )]
+    [Range(0f, 30f)]
+    [SerializeField]
+    private float sideSpawnRange = 8f;
+
+    [Tooltip(
+        "기본 생성 높이\n" +
+        "오브젝트가 땅에 박히면 올리고, 공중에 뜨면 낮추기"
+    )]
+    [SerializeField]
+    private float baseSpawnHeight = 0f;
+
+    [Header("Fixed Spawn Direction")]
+    [Tooltip(
+        "플레이어 전방 기준 방향\n" +
+        "플레이어가 보는 방향이 아니라 맵 진행 방향 기준\n" +
+        "예: Z+ 진행이면 (0,0,1), Z- 진행이면 (0,0,-1)"
+    )]
+    [SerializeField]
+    private Vector3 spawnForwardDirection = Vector3.forward;
+
+    [Tooltip(
+        "좌우 기준 방향\n" +
+        "보통 (1,0,0) 사용"
+    )]
+    [SerializeField]
+    private Vector3 spawnRightDirection = Vector3.right;
+
+    [Header("Spawn Settings")]
+    [Tooltip(
+        "몇 초마다 오브젝트를 생성할지\n" +
+        "추천: 1.5~2.5"
     )]
     [Range(0.1f, 10f)]
     [SerializeField]
     private float spawnInterval = 2f;
 
     [Tooltip(
-        "한 번에 생성할 최대 개수\n" +
-        "3라인 기준 2 추천\n" +
-        "최소 1라인은 항상 비워두기 위함"
+        "한 번에 최대 몇 개 생성할지\n" +
+        "추천: 1~2\n" +
+        "너무 많으면 피할 공간이 없어짐"
     )]
-    [Range(1, 3)]
+    [Range(1, 5)]
     [SerializeField]
     private int maxSpawnCountPerWave = 2;
 
-    // ================================
-    // 생성 확률 설정
-    // ================================
     [Header("Spawn Chance")]
-
-    [Tooltip(
-        "일반 좀비 생성 확률\n" +
-        "현재 추천값 : 60"
-    )]
+    [Tooltip("일반 좀비 생성 비율")]
     [Range(0, 100)]
     [SerializeField]
     private int normalZombieChance = 60;
 
-    [Tooltip(
-        "대형 좀비 생성 확률\n" +
-        "현재 추천값 : 20"
-    )]
+    [Tooltip("거대 좀비 생성 비율")]
     [Range(0, 100)]
     [SerializeField]
     private int bigZombieChance = 20;
 
-    [Tooltip(
-        "쓰레기 생성 확률\n" +
-        "현재 추천값 : 20"
-    )]
+    [Tooltip("장애물 생성 비율")]
     [Range(0, 100)]
     [SerializeField]
-    private int trashChance = 20;
+    private int obstacleChance = 20;
 
-    // ================================
-    // 생성 높이 보정
-    // ================================
     [Header("Spawn Height Offset")]
-
-    [Tooltip(
-        "일반 좀비 생성 높이 보정\n" +
-        "보통 0 추천"
-    )]
+    [Tooltip("일반 좀비 높이 보정")]
     [SerializeField]
     private float normalZombieYOffset = 0f;
 
     [Tooltip(
-        "대형 좀비 생성 높이 보정\n" +
-        "땅에 박히는 현상 방지\n" +
-        "현재 추천값 : 1~1.5"
+        "거대 좀비 높이 보정\n" +
+        "땅에 박히면 올리고, 공중에 뜨면 낮추기"
     )]
     [SerializeField]
-    private float bigZombieYOffset = 1f;
+    private float bigZombieYOffset = 0f;
 
-    [Tooltip(
-        "쓰레기 생성 높이 보정"
-    )]
+    [Tooltip("장애물 높이 보정")]
     [SerializeField]
-    private float trashYOffset = 0f;
+    private float obstacleYOffset = 0f;
 
-    // ================================
-    // 겹침 검사 설정
-    // ================================
     [Header("Overlap Check")]
-
     [Tooltip(
-        "생성 위치 주변 검사 범위\n" +
-        "값이 클수록 오브젝트끼리 멀리 생성됨"
+        "생성 위치 주변 겹침 검사 범위\n" +
+        "추천: 1.5~3\n" +
+        "너무 작으면 겹치고, 너무 크면 생성이 자주 취소됨"
     )]
-    [Range(0f, 5f)]
+    [Range(0f, 10f)]
     [SerializeField]
-    private float checkRadius = 1.5f;
+    private float checkRadius = 2f;
 
     [Tooltip(
-        "겹침 검사에 사용할 Layer\n" +
-        "일반 좀비 / 대형 좀비 / 쓰레기에\n" +
-        "Hazard Layer 적용 필요"
+        "겹침 검사 대상 Layer\n" +
+        "일반 좀비 / 거대 좀비 / 장애물 프리팹 Layer를 Hazard로 설정하고\n" +
+        "여기에도 Hazard 선택"
     )]
     [SerializeField]
     private LayerMask hazardLayer;
 
-    // ================================
-    // 디버그 상태 표시
-    // Inspector에서 실시간 확인 가능
-    // ================================
     [Header("Debug Status")]
-
     [Tooltip("현재 생성 타이머")]
     [SerializeField]
     private float currentSpawnTimer;
@@ -143,215 +152,201 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     private bool lastCanSpawnResult;
 
-    [Tooltip("마지막 생성 라인 번호")]
+    [Tooltip("마지막 생성 위치")]
     [SerializeField]
-    private int lastSpawnLineIndex = -1;
+    private Vector3 lastSpawnPosition;
 
     [Tooltip("마지막 생성된 오브젝트 이름")]
     [SerializeField]
     private string lastSpawnedObjectName;
 
-    // 내부 생성 타이머
     private float spawnTimer;
+
+    private void Start()
+    {
+        // Player가 비어 있으면 Player 태그로 자동 찾기
+        if (player == null)
+        {
+            GameObject playerObject =
+                GameObject.FindGameObjectWithTag("Player");
+
+            if (playerObject != null)
+            {
+                player = playerObject.transform;
+            }
+        }
+
+        NormalizeDirections();
+    }
 
     private void Update()
     {
-        // 시간 누적
-        spawnTimer += Time.deltaTime;
+        if (player == null)
+            return;
 
-        // Inspector 디버그 표시용
+        spawnTimer += Time.deltaTime;
         currentSpawnTimer = spawnTimer;
 
-        // 생성 시간이 되면 실행
         if (spawnTimer >= spawnInterval)
         {
-            // 타이머 초기화
             spawnTimer = 0f;
-
-            // 웨이브 생성
             SpawnWave();
         }
     }
 
+    private void NormalizeDirections()
+    {
+        // 위아래 방향 제거
+        spawnForwardDirection.y = 0f;
+        spawnRightDirection.y = 0f;
+
+        if (spawnForwardDirection == Vector3.zero)
+            spawnForwardDirection = Vector3.forward;
+
+        if (spawnRightDirection == Vector3.zero)
+            spawnRightDirection = Vector3.right;
+
+        spawnForwardDirection.Normalize();
+        spawnRightDirection.Normalize();
+    }
+
     private void SpawnWave()
     {
-        // 스폰 위치 없으면 실행 안 함
-        if (
-            spawnPoints == null ||
-            spawnPoints.Length == 0
-        )
-            return;
-
-        // 이번 웨이브 생성 개수 결정
         int spawnCount =
-            Random.Range(
-                1,
-                maxSpawnCountPerWave + 1
-            );
+            Random.Range(1, maxSpawnCountPerWave + 1);
 
-        // 최소 1라인은 비우기
-        spawnCount =
-            Mathf.Min(
-                spawnCount,
-                spawnPoints.Length - 1
-            );
-
-        // 이번 웨이브에서 사용한 라인 체크
-        bool[] usedLines =
-            new bool[spawnPoints.Length];
-
-        // 생성 반복
         for (int i = 0; i < spawnCount; i++)
         {
-            // 사용 안 한 랜덤 라인 선택
-            int lineIndex =
-                GetRandomUnusedLine(usedLines);
+            GameObject prefab = GetRandomPrefab();
 
-            // 실패 시 종료
-            if (lineIndex == -1)
-                return;
-
-            // 해당 라인 사용 처리
-            usedLines[lineIndex] = true;
-
-            // 생성할 프리팹 선택
-            GameObject prefab =
-                GetRandomPrefab();
-
-            // 프리팹 없으면 건너뜀
             if (prefab == null)
                 continue;
 
-            // 기본 생성 위치
             Vector3 spawnPosition =
-                spawnPoints[lineIndex].position;
+                GetRandomSpawnPosition();
 
-            // 프리팹 종류에 따라 높이 보정
-            spawnPosition.y +=
-                GetYOffset(prefab);
+            spawnPosition.y += GetYOffset(prefab);
 
-            // 생성 가능 여부 검사
-            lastCanSpawnResult =
-                CanSpawn(spawnPosition);
+            lastSpawnPosition = spawnPosition;
+            lastCanSpawnResult = CanSpawn(spawnPosition);
+            lastSpawnedObjectName = prefab.name;
 
-            // 디버그 표시용 저장
-            lastSpawnLineIndex =
-                lineIndex;
-
-            lastSpawnedObjectName =
-                prefab.name;
-
-            // 이미 주변에 오브젝트 있으면 생성 안 함
+            // 이미 주변에 오브젝트가 있으면 생성하지 않음
             if (!lastCanSpawnResult)
-            {
                 continue;
-            }
 
-            // 오브젝트 생성
-            Instantiate(
+            GameObject spawnedObject = Instantiate(
                 prefab,
                 spawnPosition,
-                spawnPoints[lineIndex].rotation
+                 GetSpawnRotation()
             );
+
+            SetNormalZombieInwardDirection(spawnedObject, spawnPosition);
         }
     }
 
-    private int GetRandomUnusedLine(bool[] usedLines)
+    private void SetNormalZombieInwardDirection(GameObject spawnedObject, Vector3 spawnPosition)
     {
-        // 무한 루프 방지용
-        int safetyCount = 0;
+        if (spawnedObject == null)
+            return;
 
-        while (safetyCount < 20)
+        if (spawnedObject != normalZombiePrefab && !spawnedObject.name.Contains(normalZombiePrefab.name))
+            return;
+
+        ObjectMover mover = spawnedObject.GetComponent<ObjectMover>();
+
+        if (mover == null)
+            return;
+
+        Vector3 centerLinePosition =
+            player.position +
+            spawnForwardDirection *
+            Vector3.Dot(
+                spawnPosition - player.position,
+                spawnForwardDirection
+            );
+
+        Vector3 inwardDirection =
+            centerLinePosition - spawnPosition;
+
+        inwardDirection.y = 0f;
+
+        if (inwardDirection == Vector3.zero)
         {
-            // 랜덤 라인 선택
-            int index =
-                Random.Range(
-                    0,
-                    usedLines.Length
-                );
-
-            // 아직 사용 안 한 라인이면 반환
-            if (!usedLines[index])
-            {
-                return index;
-            }
-
-            safetyCount++;
+            inwardDirection = -spawnForwardDirection;
         }
 
-        // 실패 시 -1 반환
-        return -1;
+        mover.SetMoveDirection(inwardDirection);
+    }
+
+    private Vector3 GetRandomSpawnPosition()
+    {
+        // 플레이어 앞쪽 거리 랜덤
+        float forwardDistance =
+            Random.Range(minForwardDistance, maxForwardDistance);
+
+        // 좌우 위치 랜덤
+        float sideOffset =
+            Random.Range(-sideSpawnRange, sideSpawnRange);
+
+        Vector3 spawnPosition =
+            player.position +
+            spawnForwardDirection * forwardDistance +
+            spawnRightDirection * sideOffset;
+
+        spawnPosition.y = baseSpawnHeight;
+
+        return spawnPosition;
+    }
+
+    private Quaternion GetSpawnRotation()
+    {
+        // 기본적으로 진행 방향 반대를 바라보게 함
+        // 프리팹 방향이 이상하면 여기 수정 가능
+        if (spawnForwardDirection == Vector3.zero)
+            return Quaternion.identity;
+
+        return Quaternion.LookRotation(-spawnForwardDirection);
     }
 
     private GameObject GetRandomPrefab()
     {
-        // 전체 확률 계산
         int totalChance =
             normalZombieChance +
             bigZombieChance +
-            trashChance;
+            obstacleChance;
 
-        // 전체 확률이 0이면 생성 안 함
         if (totalChance <= 0)
             return null;
 
-        // 랜덤 값 생성
         int randomValue =
-            Random.Range(
-                0,
-                totalChance
-            );
+            Random.Range(0, totalChance);
 
-        // 일반 좀비 선택
         if (randomValue < normalZombieChance)
-        {
             return normalZombiePrefab;
-        }
 
-        // 대형 좀비 선택
-        if (
-            randomValue <
-            normalZombieChance +
-            bigZombieChance
-        )
-        {
+        if (randomValue < normalZombieChance + bigZombieChance)
             return bigZombiePrefab;
-        }
 
-        // 나머지는 쓰레기 선택
-        return trashPrefab;
+        return obstaclePrefab;
     }
 
     private float GetYOffset(GameObject prefab)
     {
-        // 일반 좀비 높이 보정
         if (prefab == normalZombiePrefab)
-        {
             return normalZombieYOffset;
-        }
 
-        // 대형 좀비 높이 보정
         if (prefab == bigZombiePrefab)
-        {
             return bigZombieYOffset;
-        }
 
-        // 쓰레기 높이 보정
-        if (prefab == trashPrefab)
-        {
-            return trashYOffset;
-        }
+        if (prefab == obstaclePrefab)
+            return obstacleYOffset;
 
-        // 기본값
         return 0f;
     }
 
     private bool CanSpawn(Vector3 position)
     {
-        // position 주변에
-        // checkRadius 범위 안에
-        // Hazard Layer 오브젝트가 있는지 검사
-
         bool hasOverlap =
             Physics.CheckSphere(
                 position,
@@ -359,29 +354,46 @@ public class SpawnManager : MonoBehaviour
                 hazardLayer
             );
 
-        // 겹치는 오브젝트 없을 때만 생성 가능
         return !hasOverlap;
     }
 
     private void OnDrawGizmosSelected()
     {
-        // Spawn Point 없으면 종료
-        if (spawnPoints == null)
+        if (player == null)
             return;
 
-        // 검사 범위 색상
+        NormalizeDirections();
+
         Gizmos.color = Color.yellow;
 
-        foreach (Transform point in spawnPoints)
-        {
-            if (point == null)
-                continue;
+        // 대략적인 스폰 영역 표시
+        Vector3 nearCenter =
+            player.position +
+            spawnForwardDirection * minForwardDistance;
 
-            // 생성 겹침 검사 범위 표시
-            Gizmos.DrawWireSphere(
-                point.position,
-                checkRadius
-            );
-        }
+        Vector3 farCenter =
+            player.position +
+            spawnForwardDirection * maxForwardDistance;
+
+        Vector3 nearLeft =
+            nearCenter - spawnRightDirection * sideSpawnRange;
+
+        Vector3 nearRight =
+            nearCenter + spawnRightDirection * sideSpawnRange;
+
+        Vector3 farLeft =
+            farCenter - spawnRightDirection * sideSpawnRange;
+
+        Vector3 farRight =
+            farCenter + spawnRightDirection * sideSpawnRange;
+
+        Gizmos.DrawLine(nearLeft, nearRight);
+        Gizmos.DrawLine(farLeft, farRight);
+        Gizmos.DrawLine(nearLeft, farLeft);
+        Gizmos.DrawLine(nearRight, farRight);
+
+        // 마지막 생성 위치 표시
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(lastSpawnPosition, checkRadius);
     }
 }

@@ -2,109 +2,186 @@ using UnityEngine;
 
 public class HazardObject : MonoBehaviour
 {
+    public enum HazardType
+    {
+        NormalZombie, // 일반 좀비
+        BigZombie,    // 거대 좀비
+        Obstacle      // 장애물
+    }
+
     [Header("Hazard Type")]
     [Tooltip(
         "오브젝트 종류 설정\n" +
         "NormalZombie = 일반 좀비\n" +
-        "BigZombie = 대형 좀비\n" +
-        "Trash = 쓰레기"
+        "BigZombie = 거대 좀비\n" +
+        "Obstacle = 장애물"
     )]
     [SerializeField]
-    private HazardType hazardType;
+    private HazardType hazardType = HazardType.NormalZombie;
 
     [Header("Damage Settings")]
     [Tooltip(
-        "플레이어에게 줄 데미지\n" +
-        "일반 좀비 추천 : 12~15\n" +
-        "대형 좀비 추천 : 25~30\n" +
-        "쓰레기 추천 : 3~5"
+        "일반 좀비 충돌 데미지\n" +
+        "추천: 5~10"
     )]
     [Range(0f, 100f)]
     [SerializeField]
-    private float damage = 10f;
-
-    [Header("Trash Debuff Settings")]
-    [Tooltip(
-        "쓰레기 충돌 시 이동속도 감소량\n" +
-        "0.2 = 20% 감소"
-    )]
-    [Range(0f, 1f)]
-    [SerializeField]
-    private float slowAmount = 0.2f;
+    private float normalZombieDamage = 10f;
 
     [Tooltip(
-        "쓰레기 디버프 지속 시간\n" +
-        "추천 : 3~5초"
+        "거대 좀비 충돌 데미지\n" +
+        "추천: 15~25"
     )]
-    [Range(0f, 10f)]
+    [Range(0f, 100f)]
     [SerializeField]
-    private float debuffDuration = 5f;
+    private float bigZombieDamage = 20f;
 
-    [Header("Destroy Settings")]
-    [Tooltip("플레이어와 충돌 후 오브젝트 제거 여부")]
+    [Header("Collision Settings")]
+    [Tooltip(
+        "충돌 후 오브젝트 제거 여부\n" +
+        "일반 좀비는 ON 추천\n" +
+        "거대 좀비는 OFF 추천"
+    )]
     [SerializeField]
     private bool destroyOnHit = true;
 
-    [Header("Debug Settings")]
-    [Tooltip("Console에 충돌 로그를 출력할지 여부")]
+    [Tooltip(
+        "충돌 가능한 플레이어 태그\n" +
+        "WheelchairRoot 또는 PlayerRoot에 Player 태그 추천"
+    )]
     [SerializeField]
-    private bool showDebugLog = true;
+    private string playerTag = "Player";
+
+    [Header("Obstacle Settings")]
+    [Tooltip(
+        "장애물을 통과 가능하게 할지 여부\n" +
+        "Obstacle 타입은 ON 추천"
+    )]
+    [SerializeField]
+    private bool canPassThrough = true;
+
+    [Header("Effect Settings")]
+    [Tooltip(
+        "충돌 효과음"
+    )]
+    [SerializeField]
+    private AudioSource hitAudio;
+
+    [Tooltip(
+        "충돌 이펙트"
+    )]
+    [SerializeField]
+    private GameObject hitEffect;
 
     [Header("Debug Status")]
-    [Tooltip("이미 플레이어와 충돌했는지 확인")]
+    [Tooltip("마지막 충돌 여부")]
     [SerializeField]
-    private bool hasHit = false;
+    private bool hasCollided;
 
-    [Tooltip("마지막으로 충돌한 오브젝트 이름")]
+    [Tooltip("마지막 충돌 대상 이름")]
     [SerializeField]
     private string lastHitObjectName;
 
+    private Collider objectCollider;
+
+    private void Start()
+    {
+        objectCollider = GetComponent<Collider>();
+
+        SetupObstacleCollision();
+    }
+
+    private void SetupObstacleCollision()
+    {
+        // 장애물은 밟고 지나갈 수 있도록 Trigger 사용
+        if (hazardType == HazardType.Obstacle &&
+            canPassThrough &&
+            objectCollider != null)
+        {
+            objectCollider.isTrigger = true;
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        // 이미 충돌 처리된 경우 중복 처리 방지
-        if (hasHit)
+        HandleCollision(other.gameObject);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        HandleCollision(collision.gameObject);
+    }
+
+    private void HandleCollision(GameObject other)
+    {
+        // 플레이어가 아니면 무시
+        if (!other.CompareTag(playerTag))
             return;
 
-        // 충돌한 오브젝트 또는 부모에서 PlayerStatus 찾기
-        // XR 구조에서는 실제 Collider가 자식 오브젝트에 있을 수 있음
-        PlayerStatus playerStatus =
-            other.GetComponentInParent<PlayerStatus>();
-
-        // PlayerStatus가 없으면 플레이어가 아니므로 무시
-        if (playerStatus == null)
-            return;
-
-        // 충돌 처리 완료 표시
-        hasHit = true;
-
-        // Debug Status용 이름 저장
+        hasCollided = true;
         lastHitObjectName = other.name;
 
-        // 충돌 로그 출력
-        if (showDebugLog)
+        // 장애물은 효과 없음
+        if (hazardType == HazardType.Obstacle)
         {
-            Debug.Log(
-                $"{hazardType} Hit Player / Damage : {damage}"
-            );
+            Debug.Log("[장애물] 플레이어가 밟고 지나감");
+
+            return;
         }
 
-        // 플레이어에게 데미지 적용
-        playerStatus.TakeDamage(damage);
+        // 플레이어 상태 스크립트 찾기
+        PlayerStatus playerStatus =
+            other.GetComponent<PlayerStatus>();
 
-        // 쓰레기일 경우에만 디버프 적용
-        if (hazardType == HazardType.Trash)
+        if (playerStatus == null)
         {
-            playerStatus.ApplySlowDebuff(
-                slowAmount,
-                debuffDuration
-            );
+            playerStatus =
+                other.GetComponentInParent<PlayerStatus>();
+        }
 
-            if (showDebugLog)
+        // 데미지 적용
+        if (playerStatus != null)
+        {
+            switch (hazardType)
             {
-                Debug.Log(
-                    $"Trash Debuff Applied / Slow : {slowAmount} / Duration : {debuffDuration}"
-                );
+                case HazardType.NormalZombie:
+
+                    playerStatus.TakeDamage(normalZombieDamage);
+
+                    Debug.Log(
+                        "[일반 좀비 충돌] 데미지 : " +
+                        normalZombieDamage
+                    );
+
+                    break;
+
+                case HazardType.BigZombie:
+
+                    playerStatus.TakeDamage(bigZombieDamage);
+
+                    Debug.Log(
+                        "[거대 좀비 충돌] 데미지 : " +
+                        bigZombieDamage
+                    );
+
+                    break;
             }
+        }
+
+        // 효과음 재생
+        if (hitAudio != null)
+        {
+            hitAudio.Play();
+        }
+
+        // 이펙트 생성
+        if (hitEffect != null)
+        {
+            Instantiate(
+                hitEffect,
+                transform.position,
+                Quaternion.identity
+            );
         }
 
         // 충돌 후 제거

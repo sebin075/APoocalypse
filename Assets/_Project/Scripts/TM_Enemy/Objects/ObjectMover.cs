@@ -2,314 +2,200 @@ using UnityEngine;
 
 public class ObjectMover : MonoBehaviour
 {
-    // ================================
-    // 오브젝트 이동 방식 종류
-    // ================================
     public enum MoveMode
     {
-        None,           // 이동 안 함 (쓰레기)
-        Straight,       // 한 방향 직진 (대형 좀비)
-        ChasePlayer     // 플레이어 발견 후 발견 위치로 돌진 (일반 좀비)
+        None,       // 이동 안 함: 거대 좀비, 장애물
+        Directional // 지정 방향 직선 이동: 일반 좀비
     }
 
-    // ================================
-    // 이동 타입 설정
-    // ================================
     [Header("Move Type")]
-
     [Tooltip(
         "오브젝트 이동 방식\n" +
-        "None = 이동 안 함\n" +
-        "Straight = 직진 이동\n" +
-        "ChasePlayer = 플레이어 발견 후 돌진"
+        "None = 이동 안 함 (거대 좀비 / 장애물)\n" +
+        "Directional = 직선 이동 (일반 좀비)"
     )]
-    [SerializeField]
-    private MoveMode moveMode;
+    [SerializeField] private MoveMode moveMode = MoveMode.None;
 
-    // ================================
-    // 플레이어 타겟 설정
-    // ================================
-    [Header("Target")]
-
-    [Tooltip(
-        "플레이어 Transform\n" +
-        "XR에서는 Main Camera 연결 추천"
-    )]
-    [SerializeField]
-    private Transform player;
-
-    // ================================
-    // 이동 관련 설정
-    // ================================
     [Header("Move Settings")]
-
     [Tooltip(
-        "기본 이동 속도\n" +
-        "일반 좀비 추천 : 3~4\n" +
-        "대형 좀비 추천 : 2~3"
+        "이동 속도\n" +
+        "일반 좀비 추천: 2~4\n" +
+        "거대 좀비 / 장애물은 Move Mode를 None으로 설정"
     )]
     [Range(0f, 10f)]
-    [SerializeField]
-    private float moveSpeed = 3f;
+    [SerializeField] private float moveSpeed = 3f;
 
     [Tooltip(
-        "기본 이동 방향\n" +
-        "현재 프로젝트 추천값 : (0,0,-1)"
+        "직접 이동 방향을 지정할 때 사용\n" +
+        "앞: (0,0,1)\n" +
+        "뒤: (0,0,-1)\n" +
+        "왼쪽: (-1,0,0)\n" +
+        "오른쪽: (1,0,0)"
     )]
-    [SerializeField]
-    private Vector3 moveDirection = Vector3.back;
+    [SerializeField] private Vector3 moveDirection = Vector3.forward;
 
-    // ================================
-    // 회전 설정
-    // ================================
+    [Header("Random Direction")]
+    [Tooltip(
+        "일반 좀비가 생성될 때 상/하/좌/우 중 랜덤 방향으로 이동할지 여부\n" +
+        "일반 좀비는 ON 추천\n" +
+        "거대 좀비 / 장애물은 Move Mode가 None이면 영향 없음"
+    )]
+    [SerializeField] private bool useRandomDirection = true;
+
     [Header("Rotation Settings")]
-
     [Tooltip(
         "이동 방향을 바라보게 할지 여부\n" +
-        "Mixamo 애니메이션 사용 시 ON 추천"
+        "3D 모델 / Mixamo 애니메이션 사용 시 ON 추천"
     )]
-    [SerializeField]
-    private bool lookMoveDirection = true;
+    [SerializeField] private bool lookMoveDirection = true;
 
-    // ================================
-    // 플레이어 추적 설정
-    // ================================
-    [Header("Chase Settings")]
-
-    [Tooltip(
-        "플레이어 감지 거리\n" +
-        "일반 좀비 추천 : 8~10"
-    )]
-    [Range(0f, 30f)]
-    [SerializeField]
-    private float chaseDistance = 10f;
-
-    [Tooltip(
-        "플레이어와 가까워질수록 속도 증가"
-    )]
-    [SerializeField]
-    private bool useDistanceSpeedUp = true;
-
-    [Tooltip(
-        "추가되는 최대 속도\n" +
-        "일반 좀비 추천 : 1~2"
-    )]
-    [Range(0f, 10f)]
-    [SerializeField]
-    private float maxSpeedBonus = 2f;
-
-    // ================================
-    // 제거 설정
-    // ================================
     [Header("Destroy Settings")]
     [Tooltip(
-        "플레이어 뒤쪽으로 이 거리 이상 지나가면 제거됩니다.\n" +
-        "값이 너무 작으면 가까운 곳에서 사라지고,\n" +
-        "값이 너무 크면 뒤쪽 오브젝트가 오래 남습니다."
+        "플레이어와 너무 멀어진 오브젝트를 자동 제거할지 여부\n" +
+        "오브젝트가 계속 쌓이는 것을 방지"
     )]
-    [Range(0f, 50f)]
-    [SerializeField]
-    private float destroyBehindDistance = 15f;
+    [SerializeField] private bool useDistanceDestroy = true;
 
-    // ================================
-    // 디버그 상태 확인용
-    // Inspector에서 실시간 확인 가능
-    // ================================
+    [Tooltip(
+        "거리 제거 기준이 되는 플레이어 Transform\n" +
+        "휠체어 게임에서는 WheelchairRoot 또는 PlayerRoot 추천"
+    )]
+    [SerializeField] private Transform player;
+
+    [Tooltip(
+        "플레이어와 이 거리 이상 멀어지면 제거\n" +
+        "추천: 25~40\n" +
+        "너무 작으면 빨리 사라지고, 너무 크면 오브젝트가 오래 남음"
+    )]
+    [Range(0f, 100f)]
+    [SerializeField] private float destroyDistance = 35f;
+
     [Header("Debug Status")]
-
-    [Tooltip("현재 플레이어를 발견했는지 여부")]
-    [SerializeField]
-    private bool hasDetectedPlayer;
+    [Tooltip("현재 실제 이동 방향")]
+    [SerializeField] private Vector3 currentMoveDirection;
 
     [Tooltip("현재 실제 이동 속도")]
-    [SerializeField]
-    private float currentSpeed;
+    [SerializeField] private float currentSpeed;
 
-    [Tooltip("현재 플레이어와 거리")]
-    [SerializeField]
-    private float currentDistanceToPlayer;
-
-    // 플레이어 발견 당시 돌진 방향 저장
-    private Vector3 fixedChaseDirection;
+    [Tooltip("플레이어와 현재 거리")]
+    [SerializeField] private float currentDistanceToPlayer;
 
     private void Start()
     {
-        // Player가 비어있으면
-        // Main Camera 자동 연결
-        // XR Interaction Simulator 대응
-        if (player == null && Camera.main != null)
+        // Player가 비어 있으면 Player 태그로 자동 찾기
+        if (player == null)
         {
-            player = Camera.main.transform;
+            GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+
+            if (playerObject != null)
+            {
+                player = playerObject.transform;
+            }
         }
 
-        // Y 방향 제거
-        // 위아래 이동 방지
+        // 일반 좀비라면 상/하/좌/우 중 랜덤 방향 선택
+        if (moveMode == MoveMode.Directional && useRandomDirection)
+        {
+            moveDirection = GetRandomCardinalDirection();
+        }
+
+        // Y축 이동 제거
         moveDirection.y = 0f;
 
-        // 방향 벡터 정규화
+        // 방향값이 비어 있으면 기본값 지정
+        if (moveDirection == Vector3.zero)
+        {
+            moveDirection = Vector3.forward;
+        }
+
+        // 방향 정규화
         moveDirection.Normalize();
+
+        currentMoveDirection = moveDirection;
+        currentSpeed = moveMode == MoveMode.Directional ? moveSpeed : 0f;
     }
 
     private void Update()
     {
-        // 플레이어 없으면 실행 안 함
-        if (player == null)
-            return;
-
-        // 현재 플레이어 거리 계산
-        currentDistanceToPlayer =
-            Vector3.Distance(
-                transform.position,
-                player.position
-            );
-
-        // 현재 실제 속도 계산
-        currentSpeed = GetFinalSpeed();
-
-        // 이동 처리
         MoveObject();
-
-        // 지나간 오브젝트 제거
-        CheckDestroyDistance();
+        CheckDistanceDestroy();
     }
 
     private void MoveObject()
     {
         switch (moveMode)
         {
-            // 이동 안 함
             case MoveMode.None:
+                currentSpeed = 0f;
                 break;
 
-            // 한 방향 직진
-            case MoveMode.Straight:
-
-                MoveInDirection(
-                    moveDirection,
-                    currentSpeed
-                );
-
-                break;
-
-            // 플레이어 발견 후 돌진
-            case MoveMode.ChasePlayer:
-
-                MoveChasePlayer(currentSpeed);
-
+            case MoveMode.Directional:
+                currentSpeed = moveSpeed;
+                MoveInDirection(moveDirection, currentSpeed);
                 break;
         }
     }
 
-    private void MoveChasePlayer(float speed)
+    public void SetMoveDirection(Vector3 direction)
     {
-        // 아직 플레이어 발견 전
-        if (!hasDetectedPlayer)
-        {
-            // 감지 거리 안으로 들어왔는지 확인
-            if (currentDistanceToPlayer <= chaseDistance)
-            {
-                // 플레이어 발견 처리
-                hasDetectedPlayer = true;
+        direction.y = 0f;
 
-                // 플레이어 현재 위치 저장
-                Vector3 detectedPosition =
-                    player.position;
-
-                // Y값 제거
-                // 위아래 방향 방지
-                detectedPosition.y =
-                    transform.position.y;
-
-                // 발견 당시 방향 계산
-                fixedChaseDirection =
-                    (
-                        detectedPosition -
-                        transform.position
-                    ).normalized;
-
-                // Y 제거
-                fixedChaseDirection.y = 0f;
-
-                // 방향 정규화
-                fixedChaseDirection.Normalize();
-            }
-            else
-            {
-                // 발견 전에는 직진
-                MoveInDirection(
-                    moveDirection,
-                    speed
-                );
-
-                return;
-            }
-        }
-
-        // 발견 후에는
-        // 발견 당시 위치 방향으로만 돌진
-        MoveInDirection(
-            fixedChaseDirection,
-            speed
-        );
-    }
-
-    private float GetFinalSpeed()
-    {
-        // 기본 속도
-        float finalSpeed = moveSpeed;
-
-        // 거리 기반 가속 사용 시
-        if (
-            useDistanceSpeedUp &&
-            currentDistanceToPlayer <= chaseDistance
-        )
-        {
-            // 거리 비율 계산
-            float t =
-                1f -
-                (
-                    currentDistanceToPlayer /
-                    chaseDistance
-                );
-
-            // 추가 속도 적용
-            finalSpeed += maxSpeedBonus * t;
-        }
-
-        return finalSpeed;
-    }
-
-    private void MoveInDirection(
-        Vector3 direction,
-        float speed
-    )
-    {
-        // 방향 없으면 이동 안 함
         if (direction == Vector3.zero)
             return;
 
-        // 이동 처리
-        transform.position +=
-            direction *
-            speed *
-            Time.deltaTime;
+        moveDirection = direction.normalized;
+        currentMoveDirection = moveDirection;
+    }
+    
+    private void MoveInDirection(Vector3 direction, float speed)
+    {
+        if (direction == Vector3.zero)
+            return;
 
-        // 이동 방향 바라보기
+        transform.position += direction * speed * Time.deltaTime;
+
         if (lookMoveDirection)
         {
             transform.forward = direction;
         }
+
+        currentMoveDirection = direction;
     }
 
-    private void CheckDestroyDistance()
+    private Vector3 GetRandomCardinalDirection()
     {
-        // 플레이어보다 얼마나 뒤로 지나갔는지 계산
-        float distanceBehind =
-            player.position.z -
-            transform.position.z;
+        int randomIndex = Random.Range(0, 4);
 
-        // 일정 거리 이상 뒤로 지나가면 제거
-        if (distanceBehind >= destroyBehindDistance)
+        switch (randomIndex)
+        {
+            case 0:
+                return Vector3.forward; // 상 / 앞
+
+            case 1:
+                return Vector3.back; // 하 / 뒤
+
+            case 2:
+                return Vector3.left; // 좌
+
+            case 3:
+                return Vector3.right; // 우
+        }
+
+        return Vector3.forward;
+    }
+
+    private void CheckDistanceDestroy()
+    {
+        if (!useDistanceDestroy)
+            return;
+
+        if (player == null)
+            return;
+
+        currentDistanceToPlayer =
+            Vector3.Distance(transform.position, player.position);
+
+        if (currentDistanceToPlayer >= destroyDistance)
         {
             Destroy(gameObject);
         }
@@ -317,12 +203,18 @@ public class ObjectMover : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // 플레이어 감지 범위 표시
-        Gizmos.color = Color.red;
-
-        Gizmos.DrawWireSphere(
+        // 파란 선 = 이동 방향
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(
             transform.position,
-            chaseDistance
+            transform.position + moveDirection.normalized * 3f
         );
+
+        // 회색 원 = 제거 거리
+        if (useDistanceDestroy)
+        {
+            Gizmos.color = Color.gray;
+            Gizmos.DrawWireSphere(transform.position, destroyDistance);
+        }
     }
 }
